@@ -1,0 +1,23 @@
+Date : 14 Feb 2013
+1- 
+	reading all files were removed from hmax_main.cpp   to  implementations/file_processing.cpp    in method   read_all_pictures_from_base_dir
+	in this method if base_dir does not contain  "slash /" I have put at the end
+
+2-	
+	adding number of patches to input parameters,
+
+3-
+	putting writting patches information from hmax_main.cpp to function write_patches_information_to_file
+
+4-
+	conveting C2 results from vector<vector<vector<float>>> to float ** moved to function convert_c2_results_format_from___vector_vector_vecotr_float___TO___2Dfloat_array 
+		and removed from hmax_main.cpp
+
+5-
+	moving computing success rate in function compute_success_rate in svm.cpp
+
+
+	salam
+	
+	
+

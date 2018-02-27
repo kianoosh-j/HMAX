@@ -1,0 +1,38 @@
+#ifndef __HEADERS__
+#define __HEADERS__
+
+
+#include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <list>
+#include <math.h>
+#include <sstream>
+#include <matio.h>
+
+
+// it is type of pictures
+typedef double picture_cell_type;
+
+using namespace std;
+
+class TempType{
+	public:
+		string Name;
+		int Number;
+		TempType(string str,int num){
+		Name = str;
+		Number = num;
+	}
+};
+
+typedef unsigned char uchar;
+
+#endif

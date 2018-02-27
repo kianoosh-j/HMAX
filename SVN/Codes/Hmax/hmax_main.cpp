@@ -1,0 +1,134 @@
+#include "headers/headers.h"
+#include "headers/C1.h"
+#include "headers/C2.h"
+#include "headers/file_processing.h"
+#include "headers/svm.h"
+#include "headers/pthread_headers.h"
+#include "pthread.h"
+#include "../SVM/headers/libsvm.h"
+
+#define ARGN 5
+#define DIR_NUMS 4
+
+
+int main( int argn , char *argv[]){
+
+
+	// check if input parameters are not enough
+	if ( argn < ARGN ){
+		cerr<<" Arguments is not correct, please run the program as below:\n\n\t./hmax   debug_mode   base_dir   destination_dir   number_of_patches\n\n";
+		return 0;
+	}
+
+	// for random numbers
+	srand(time(0));
+
+/*************************************************************************/
+/**********************  reading input parameters     ********************/
+/*************************************************************************/
+
+	// for walking over argv
+	int base_index=1;
+
+	// get if user needs to be in debug mode
+	int debug_mode = atoi(argv[base_index++] );
+	
+	// base_folder and destination dir for reading and writing files and images
+	string base_folder = argv[base_index++];
+	string destination_dir = argv[base_index++];
+
+	// determine number of patches, it should multiply by 4, as we have 4 types of patches , 4, 8, 12, 16
+	int num_of_patches_for_each_image = atoi ( argv[base_index++] );
+	int num_of_patches = num_of_patches_for_each_image * 4;
+
+	// pictures contains all pictures, we have 4 types of pictures, train_pos, train_neg, test_pos, test_neg
+	list< list<Picture> > pictures;
+	if ( read_all_pictures_from_base_dir ( base_folder , destination_dir , pictures ) == -1 ){
+		cerr<<" error while reading pictures from files\n";
+		return -1;
+	}
+
+	// it contains patches
+	// it is list of list of list
+	// 	1- we have 4 rotation for each patch 90, -45, 0  45
+	// 	2- we have 4 sizes for patches when extract patches from a random picture
+	// 	3- each time extract 4 patches from pictures
+	// 	so first list is for pictures, second for sizes, and thirs list is for rotations,
+	//list< list< list<Picture> > > patches;
+	list< list< Patch > > patches;
+	
+	// patch sizes, it is 4 types or sizes, 4, 8, 12, 16
+	list<int> patch_sizes;
+	patch_sizes.push_back(4), patch_sizes.push_back(8), patch_sizes.push_back(12), patch_sizes.push_back(16); 
+
+
+/************************************************************************/
+/**************  1- Extract Patches from Positive Train     *************/
+/************************************************************************/
+
+
+	// extract patches from train_pos pictures, it is first list in pictures
+	extract_patches ( *(pictures.begin()) , patches , (pictures.begin()->size() ) ,patch_sizes , num_of_patches_for_each_image );
+
+	// write patches information to files
+	write_patches_information_to_file ( destination_dir , patches );
+
+
+
+/**************************************************************************/
+/**************  2- Computing C2 Results For all Pictures     *************/
+/**************************************************************************/
+
+	// writing patches information in files
+	// it is vector of vector of vectors as 
+	// 	1- we have 4 types of pictures train_pos, train_neg, test_pos, test_neg
+	// 	2- in each folder we have a lot of images
+	// 	3- for each image we have a lot of C2 results (for each patch)
+	vector<vector<vector<float> > > C2_results;
+
+	// alocate C2_results vectors and running C2
+	allocate_c2_result (  pictures , C2_results ,  num_of_patches );
+	run_c2_for_all_pictures ( pictures , patches , C2_results );
+	
+	// C2 results in another format
+	float **C2_results_fl;
+
+	// convert C2 results from main format to new format for computing success rate and svm
+	convert_c2_results_format_from___vector_vector_vecotr_float___TO___2Dfloat_array ( pictures , C2_results , C2_results_fl );
+
+	// print C2 results
+	print_C2_results ( C2_results );
+
+/**************************************************************************/
+/********************  3- Computing Success Rate     **********************/
+/**************************************************************************/
+
+	// it includes size of pictures in each folder ( train_pos , train_neg , test_pos , test_neg ) and also total number of pictures
+	int *sizes = new int [ pictures.size() ];
+	list<list<Picture> >::iterator iter_lpicture = pictures.begin();
+	int total_pictures=0;
+	for ( int i=0 ; i<pictures.size() ; i++){
+		sizes[i] = iter_lpicture->size();
+		iter_lpicture++;
+		total_pictures += sizes[i];
+	}
+
+	// compute success rate
+	float success_rate_float = compute_success_rate ( pictures , C2_results_fl , num_of_patches_for_each_image * patch_sizes.size() );
+
+
+	write_c2_results_for_libsvm ( destination_dir , sizes , num_of_patches_for_each_image*patch_sizes.size() , C2_results_fl );
+	write_c2_results ( destination_dir , sizes , num_of_patches_for_each_image*patch_sizes.size() , C2_results_fl );
+	cerr << "after write_c2_results" << endl;
+	ofstream ofs1;
+	stringstream input_name1;
+	input_name1<< destination_dir <<"/success_rate.txt";
+	ofs1.open(input_name1.str().c_str(),ios_base:: out);
+	ofs1<<success_rate_float<<endl;
+
+
+
+	return 0;
+
+}
+

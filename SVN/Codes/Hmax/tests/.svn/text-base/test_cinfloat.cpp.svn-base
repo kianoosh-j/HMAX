@@ -1,0 +1,23 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+
+int main(){
+
+	string file ;
+	cin>>file;
+
+	float tempf;
+
+	fstream fin;
+	fin.open ( file.c_str() , ios::in );
+
+	while ( fin>>tempf ){
+		cout<<tempf<<"*"<<endl;
+	}
+	fin.close();
+	return 0;
+}

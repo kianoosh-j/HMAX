@@ -1,0 +1,3 @@
+
+Number of parent picture in directory:	46
+Index in parent picture	(30,18)

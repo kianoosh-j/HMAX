@@ -1,0 +1,68 @@
+compiler=g++
+train_pos=train_pos;
+train_neg=train_neg;
+test_pos=test_pos;
+test_neg=test_neg;
+all: compile_genetic
+
+compile: 
+	${compiler} -o2  `pkg-config --cflags opencv` svm.cpp gabor.cpp	window_patch_distance.cpp C2.cpp myconv.cpp picture_handler.cpp filters.cpp image_processing.cpp power2.cpp main.cpp -o hmax  `pkg-config --libs opencv` 
+
+
+compile2:
+	${compiler} -o2 `pkg-config --cflags opencv` filters.o image_processing.o power2.o main.cpp -o hmax  `pkg-config --libs opencv` 
+
+
+compile3:
+	${compiler} -o2  -I $cvdir -I $cvauxdir -I $cvxcore -I $highgui window_patch_distance.cpp C2.cpp myconv.cpp picture_handler.cpp filters.cpp image_processing.cpp power2.cpp main.cpp -o hmax  
+
+
+
+run2:
+	./hmax 0 train_pos train_neg test_pos test_neg 
+
+
+compile_face:
+	${compiler} -o2  `pkg-config --cflags opencv` svm.cpp gabor.cpp	window_patch_distance.cpp C2.cpp myconv.cpp picture_handler.cpp filters.cpp image_processing.cpp power2.cpp main_face.cpp -o hmax_pthread  -lpthread `pkg-config --libs opencv` 
+	./hmax_pthread 0 ../../picture/faces/  Output_C2_face 1 1>out_face1 2>out_face2 
+
+
+
+compile_genetic:
+	${compiler} -o2 `pkg-config --cflags opencv` svm.cpp gabor.cpp	window_patch_distance.cpp C2.cpp myconv.cpp picture_handler.cpp filters.cpp image_processing.cpp power2.cpp main_genetic.cpp -o hmax_genetic -lga `pkg-config --libs opencv`
+
+run_genetic_face:
+	./hmax_genetic ../../pictures/ C2face_new 202 244 232 223 1000  1>out_face_genetic1 2>out_face_genetic2 
+
+
+compile_pthread:
+	${compiler} -o2  `pkg-config --cflags opencv` svm.cpp gabor.cpp	window_patch_distance.cpp C2.cpp myconv.cpp picture_handler.cpp filters.cpp image_processing.cpp power2.cpp main_face.cpp -o hmax  `pkg-config --libs opencv` 
+
+
+run_face:
+	./hmax 0 ../../project/pictures/faces/  Output_C2_face 1 1>out_face1 2>out_face2 
+
+
+run_pthread:
+	./hmax 0 ./ Output_C2_face 1 1>out_thread1 2>out_thread2 
+
+run3:
+	./hmax 0 train_pos train_neg test_pos test_neg 2>out2
+
+run:
+	./hmax 0 train_pos train_neg test_pos test_neg > out1 2>out2
+
+
+test_window:
+	${compiler} -o2  `pkg-config --cflags opencv` svm.cpp gabor.cpp	window_patch_distance.cpp C2.cpp myconv.cpp picture_handler.cpp filters.cpp image_processing.cpp power2.cpp test_windowpatch.cpp -o test_window  -lpthread `pkg-config --libs opencv` 
+	./test_window > out_test_window
+	vim out_test_window
+	rm test_window
+test_extr:
+	${compiler} -o2  `pkg-config --cflags opencv` svm.cpp gabor.cpp	window_patch_distance.cpp C2.cpp myconv.cpp picture_handler.cpp filters.cpp image_processing.cpp power2.cpp test_extract.cpp -o test_extr  -lpthread `pkg-config --libs opencv` 
+	./test_extr > out_test_extr
+	vim out_test_extr
+
+clean:
+	rm hmax *.o
+

@@ -1,0 +1,23 @@
+#include "headers.h"
+#include "get_files.cpp"
+#include "read_images.cpp"
+#include "image_processing.h"
+#include "C2.h"
+#include "svm.h"
+#include "myconv.h"
+#include "pthread_headers.h"
+#include "pthread.h"
+
+
+int main(){
+
+	Picture *p = new Picture;
+	string file;
+	cin>>file;
+
+	read_mat ( file , p );
+
+	print_picture ( *p );
+	return 0;
+
+}

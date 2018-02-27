@@ -1,0 +1,3 @@
+1- there was bug in file implementations/file_processing.cpp
+	
+	while reading image in read_images : I called function read_mat instead of Pixels function. I changed it to Pixel function.

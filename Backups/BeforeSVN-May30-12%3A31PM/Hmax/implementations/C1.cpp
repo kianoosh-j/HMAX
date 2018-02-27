@@ -1,0 +1,851 @@
+#include "../headers/headers.h"
+#include "../headers/C1.h"
+#include "../headers/gabor.h"
+#include "../headers/myconv.h"
+#include "../headers/gpu-convolution.h"
+
+
+void 	init_parameters_for_C1 ( list<list<Picture> > &gabor_filters , vector<int> &c1SpaceSS , vector<int> &c1ScaleSS , int &c10L ){
+
+	c1SpaceSS.resize(0);
+	c1ScaleSS.resize(0);
+	list<float> Div;
+	list<int> rotations;
+	list<int> gabor_filter_sizes;
+
+	int minSpaceSS=10;
+	int maxSpaceSS=10;
+	int SpaceSS_step=2;
+	for ( int i=minSpaceSS ; i<=maxSpaceSS ; i+=SpaceSS_step ){
+		c1SpaceSS.push_back(i);
+	}
+
+	int minScaleSS=1;
+	int maxScaleSS=3;
+	int ScaleSS_step=2;
+	for ( int i=minScaleSS ; i<=maxScaleSS ; i+=ScaleSS_step ){
+		c1ScaleSS.push_back(i);
+	}
+
+	c10L=2;//as in the matlab code
+
+	float minDiv=3.85;
+	float maxDiv=3.9;
+	float Div_step = -0.05;
+	for ( float i=maxDiv ; i>=minDiv ; i+=Div_step ){
+		Div.push_back ( i );
+	}
+
+	rotations.push_back(90);
+	rotations.push_back(-45);
+	rotations.push_back(0);
+	rotations.push_back(45);
+
+	int minFS=11;
+	int maxFS=13;
+	int FS_step=2;
+	for ( int i=minFS ; i<= maxFS ; i+=FS_step ){
+		gabor_filter_sizes.push_back (i);
+	}
+
+	init_gabor_filters ( gabor_filters , gabor_filter_sizes , rotations , Div );
+
+}
+
+int extract_patches(list<Picture > &trainpos, list<list<list<Picture> > > &c1patches , int ntrainpos,list<int >patch_sizes , int number_of_patches){
+  //input :
+
+	//cerr<<"calling extract_patches\n";
+	list<list<Picture> > gabor_filters;
+	list<int > gabor_filter_sizes,gabor_filter_rotations;
+	list<float> div;
+	list<list<Picture> > S1_Pictures,C1_Pictures;
+	list<Picture > patches;
+	list<list<Picture> >::iterator iter_c1;
+	list<Picture>::iterator iter_train_pos_list;
+	vector<int > s1space(1);
+	vector<int> c1scaleSS(2);
+	Picture temp_random_picture;
+	Picture temp_patches;
+	
+	//output : 
+	list<list<Picture> > lltemp;
+	
+	div.clear();	
+	c1patches.clear();
+	lltemp.clear();
+	S1_Pictures.clear();
+	C1_Pictures.clear();
+	patches.clear();
+	int i,j,count=0;
+	s1space[0]=10;
+	c1scaleSS[0]=11;
+	c1scaleSS[1]=13;
+	int rotations = 4;
+
+	//init_gaborfilter() :
+	gabor_filter_sizes.push_back(11);
+	gabor_filter_sizes.push_back(13);
+	gabor_filter_rotations.push_back(90);
+	gabor_filter_rotations.push_back(-45);
+	gabor_filter_rotations.push_back(0);
+	gabor_filter_rotations.push_back(45);
+	div.push_back(3.9);
+	div.push_back(3.85);
+
+	//cerr<<"calling init_gabor_filters in extract_patches\n";
+
+	if(init_gabor_filters(gabor_filters,gabor_filter_sizes,gabor_filter_rotations,div)!=0)
+	{
+		cout<<"error init gabor filter is not runing properly "<<endl;
+		return -1;
+	}
+
+	//cerr<<"end of calling init_gabor_filters in extract_patches\n";
+
+	//choosing a random picture from train posetive pictures :
+	//srand(time(NULL));
+	for(i=0;i<number_of_patches;i++)
+	{
+		int r,x;
+		r=rand()%ntrainpos;
+		//cout<<"random picture is "<<r<<endl;
+		//extract a random posetive train picture form list;
+
+
+		int count = 0;
+		for(iter_train_pos_list=trainpos.begin();iter_train_pos_list!=trainpos.end();iter_train_pos_list++)
+		{
+			if(count==r)
+			{
+				temp_random_picture=(*iter_train_pos_list);
+				count=0;
+				break;
+			}  
+			count++;
+		}
+
+		//cerr<<"getting random picture\n";
+		//print_picture ( temp_random_picture );
+		//cerr<<"calling C1 for random picture\n";
+
+		if(C1_Function(temp_random_picture,S1_Pictures,C1_Pictures,gabor_filters,s1space,c1scaleSS,2)!=0)
+		{
+
+			cerr<<"error extract_patches : C1_Function "<<endl;
+			return -1;
+		
+		}
+		for(list<list<Picture> >::iterator it = C1_Pictures.begin(); it != C1_Pictures.end(); it++)
+			for(list<Picture>::iterator it2 = it->begin(); it2 != it->end(); it2++)
+				it2->NumberInDirectory = temp_random_picture.NumberInDirectory;
+		//cerr<<"end of calling C1 for random picture\n";
+
+		/*list<list<Picture> > temp2;
+		  list<Picture> temp1;
+		  for(iter_c1=C1_Pictures.begin();iter_c1!=C1_Pictures.end();iter_c1++)
+		  {
+		//extract random patches call function
+		temp2.pushback(temp1);
+		}*/
+		list<list<Picture> >::iterator iter_c1_patches;
+		iter_c1_patches=C1_Pictures.begin();
+		list<int >::iterator iter_patchsizes;
+		for(iter_patchsizes=patch_sizes.begin();iter_patchsizes!=patch_sizes.end();iter_patchsizes++)
+		{
+
+			//cerr<<"calling init_picture to extract a patch for C1\n";
+			for ( int i=0 ; i<rotations ; i++ ){
+
+				init_picture(temp_patches,(*iter_patchsizes),(*iter_patchsizes));
+				patches.push_back(temp_patches);
+			}
+
+			extract_arandom_patch((*iter_c1_patches),patches);
+			lltemp.push_back(patches);
+			patches.clear();
+		}
+		c1patches.push_back(lltemp);
+		lltemp.clear();
+
+		//end of the main for iteration :
+		free_list_list_pictures ( C1_Pictures );
+		free_list_list_pictures ( S1_Pictures );
+	}
+
+	//cerr<<"extract_patches : end\n";
+
+	return 0;
+}
+
+int extract_patches_from_S1 ( const list< list<Picture > > &gabored_pictures , list< list<Picture> > &patches , const list<int> &patch_sizes , const int num_of_patches_for_each_image ){
+
+	return 0;//TODO
+}
+
+int extract_arandom_patch(list<Picture> &picture, list<Picture> &patch){
+
+	if ( picture.size()  != 4 && patch.size() != 4 ){
+		cerr<<"error: extract_arandom_patch : picture or patch sizes should be 4\n";
+		return -1;
+	}
+
+	int width = picture.begin()->width;
+	int height = picture.begin()->height;
+	int new_width = width-patch.begin()->width;
+	int new_height = height - patch.begin()->height;
+	//int random_number = rand() % ( new_width * new_height );
+	//int randi = random_number % new_width;
+	//int randj = random_number / new_width;
+	int randi = rand() % new_width;
+	int randj = rand() % new_height;
+	//int numOfPicture = 0;
+	//cout<<"HHHHH\trandom number is\t"<<randi<<" from "<<width<<"-\t"<<randj<<" from "<<height<<"\n";
+	for ( list<Picture>::iterator iter_picture1 = picture.begin() , iter_picture2 = patch.begin() ; iter_picture1 != picture.end() && iter_picture2 != patch.end(); iter_picture1++ , iter_picture2++){
+	
+			
+
+		int index1 = 0;
+		int index2 = 0;
+		//int randi = rand()%(width-(*iter_picture2).width);
+		//int randj = rand()%(height-(*iter_picture2).height);
+		//cout<<"\n\nrandom numbers are "<<randj<<"\t"<<randi<<endl;
+
+		for ( int i=0 ; i<(*iter_picture2).height ; i ++ ){
+
+			for ( int j=0 ; j<(*iter_picture2).width ; j ++ ){
+
+				(*iter_picture2).matrix[i*(*iter_picture2).width + j] = (*iter_picture1).matrix[(i+randj)*width + j + randi];
+			}
+		}
+		iter_picture2 -> X = randi;
+		iter_picture2 -> Y = randj;
+		iter_picture2 -> NumberInDirectory = iter_picture1->NumberInDirectory;
+		//numOfPicture++;
+
+	}
+
+
+/*	for(int i=randi; i<randi+patch.width;i++){
+		index1 = 0;
+		for(int j=randj; j<randj+patch.height; j++){
+			patch.matrix[(index1++)*patch.width+(index2)] = picture.matrix[i*picture.width+j];
+		}
+		index2++;
+	}	
+	*/
+}
+
+int normalize_picture ( const Picture &picture , int radius , Picture &normalized_picture ){
+
+	list<list<Picture> > list_list_picture_temp;
+	list<Picture> list_picture_temp;
+
+	list<list<Picture> >::const_iterator citer_lpicture1;
+	//list<list<Picture> >::iterator citer_lpicture1;
+	list<Picture>::const_iterator citer_picture1;
+	list<int>::const_iterator citer_int1;
+
+	if ( !valid_picture ( picture ) ){
+		cerr << "normalize pictures :: invalid picture"<< endl;
+		return -1;
+	}
+
+	init_picture(normalized_picture , picture.width , picture.height);
+
+	Power2 ( picture.matrix ,  normalized_picture.matrix , picture.width * picture.height );
+
+	//SumFilter ( normalized_picture.matrix , normalized_picture.width , normalized_picture.height , radius/2 );
+	int sum_support[]={radius/2};
+	SumFilter ( normalized_picture , sum_support , 1 );
+
+
+	Radical2 ( normalized_picture.matrix , normalized_picture.width * normalized_picture.height );
+
+	Plus_Not ( normalized_picture.matrix , normalized_picture.width * normalized_picture.height );
+//	cout<<"normal picture"<<endl;
+//	print_picture(normalized_picture);
+
+
+	return 0;//TODO
+}
+
+int run_gabor_filter_on_pictures ( list<Picture> &pictures , list<list<Picture> > &gabor_filters , list<list<list<Picture> > > &gabored_pictures ){
+
+	//cout<<"gaboooooooooooooooooooooooooor"<<endl;
+	list<list<Picture> > list_list_picture_temp;
+	list<Picture> list_picture_temp;
+
+	list<list<Picture> >::iterator iter_lpicture1,iter_lpicture2;
+	list<Picture>::iterator iter_picture1,iter_picture2;
+	list<int>::const_iterator citer_int1,citer_int2;
+	list<float *>::iterator iter_float1;
+	list< list<float *> >::iterator list_iter_float1;
+
+	for ( iter_picture1 = pictures.begin() ; iter_picture1 != pictures.end() ; iter_picture1++){
+
+		list_picture_temp.clear();
+		for ( iter_lpicture2 = gabor_filters.begin() ;  iter_lpicture2 != gabor_filters.end() ; iter_float1++){
+
+			Picture pic_temp1;
+			for (  iter_picture2 = (*iter_lpicture2).begin() ; iter_picture2 != (*iter_lpicture2).end() ; iter_picture2++){
+
+				pic_temp1.width = (*iter_picture1).width;
+				pic_temp1.height = (*iter_picture1).height;
+				pic_temp1.matrix = new float [pic_temp1.width * pic_temp1.height];
+
+				// conv2 the (*iter_picture1).matrix with (*iter_picture2).matrix using size of matrix and size of (*citer_int2) and put it in pic_temp1
+				list_picture_temp.push_back(pic_temp1);
+
+			}
+			list_list_picture_temp.push_back ( list_picture_temp );
+
+		}
+
+		gabored_pictures.push_back ( list_list_picture_temp);
+	}
+	return 0;//TODO
+}
+
+int remove_borders_list ( list<Picture> &gabored_pictures , int radius ){
+
+	list<Picture>::iterator iter_picture1;
+
+	for ( iter_picture1 = gabored_pictures.begin() ; iter_picture1 != gabored_pictures.end()  ; iter_picture1++){
+
+		remove_borders ( *iter_picture1 , (radius + 1)/2 , (radius +1)/2,(radius - 1)/2 , (radius - 1)/2 );//TODO ATTENTION FOR +1 /2 AND -1 /2
+		// remove_borders of (*iter_picture1) with its width and height and using (*citer_int1)/2
+		//remove_borders ( *iter_picture1 , (radius - 1)/2 , (radius -1)/2 );//TODO ATTENTION FOR +1 /2 AND -1 /2
+	}
+
+	return 0;//TODO
+}
+
+int max_filter ( list<Picture> &gabored_pictures , int local_width , int local_height ){
+
+	list<Picture>::iterator iter_picture1;
+
+	for ( iter_picture1 = gabored_pictures.begin() ; iter_picture1 != gabored_pictures.end() ; iter_picture1++){
+
+		local_max ( *iter_picture1 , local_width , local_height );
+
+	}
+
+	return 0;//TODO
+}
+
+int free_all_memories ( list< list<float *> > &gabor_filters , list< list<Picture> > &gabored_pictures , list <list <Picture> > &normalized_pictures ){
+	return 0;//TODO
+}
+
+int max_list_pictures ( list<Picture> &first_pics , list<Picture> &second_pics ){
+
+	//cerr<<"max_list_pictures : start\n";
+	list<Picture>::iterator iter_picture1, iter_picture2;
+
+	for ( iter_picture1=first_pics.begin(), iter_picture2=second_pics.begin() ; iter_picture1!= first_pics.end() && iter_picture2!=second_pics.end() ; iter_picture1++ , iter_picture2++ ){
+
+		if ( max_pictures ( *iter_picture1 , *iter_picture1 , *iter_picture2 ) != 0 ){
+			cerr<<"error : max_list_pictures : while max_pictures\n";
+			return -1;
+		}
+	}
+	//cerr<<"max_list_pictures : end\n";
+	return 0;
+}
+
+int init_list_picture ( list<Picture> &dest , list<Picture>&src ){
+
+	list<Picture>::iterator iter_picture1, iter_picture2;
+	for ( iter_picture1 = src.begin() ; iter_picture1 != src.end() ; iter_picture1++){
+
+		Picture p;
+		if ( init_copy_picture ( p , *iter_picture1 ) != 0 ){
+			cerr<<"error init_list_picture : error whiel copying pictures\n";
+			return -1;
+		}
+		dest.push_back ( p );
+	}
+
+	return 0;
+}
+
+int C1_Function ( Picture &picture, list<list<Picture> > &S1_Pictures, list<list<Picture> > &C1_Pictures , list<list<Picture> > &gabor_filters, const vector<int> &c1SpaceSS, const vector<int> &c1ScaleSS, int c10L ){
+	
+	cout<<"C1_Function\t"<<picture.height<<"\t"<<picture.width<<endl;
+		
+	if ( !valid_picture ( picture ) ){
+		cerr<<"error  : C1_Function : picture is not valid\n";
+		return -1;
+	}
+	
+	list<list<list<Picture> > >::iterator iter_llpicture1;
+	list<list<Picture> >::iterator iter_lpicture1,iter_lpicture2,iter_lpicture3 ;
+	list<list<Picture> >::const_iterator citer_lpicture1,citer_lpicture2,citer_lpicture3 ;
+	list<Picture>::iterator iter_picture1,iter_picture2;
+	list<Picture>::const_iterator citer_picture1;
+
+	// do sumfilter which is same as report of Mr. Ghodrati
+	list<Picture> normalized_pictures;
+
+	list<Picture> list_picture_temp;
+	list_picture_temp.clear();
+	cerr<<"C1_Function : normalizing pictures\n";
+	
+	for ( citer_lpicture1 = gabor_filters.begin() ; citer_lpicture1 != gabor_filters.end() ; citer_lpicture1++){
+		cerr << "HELLO" << endl;
+
+		if ( (*citer_lpicture1).begin() == (*citer_lpicture1).end() ){
+			cerr<<"error : C1 : gabor filters is empty in C1 function\n";
+			return -1;
+		}
+ 		cerr << "goodbye" << endl;
+		Picture pic_temp;
+		if ( normalize_picture ( picture , (*(*citer_lpicture1).begin()).width , pic_temp ) != 0 ) {
+			cerr<<"error : C1 : while normalizing pictures\n";
+			return -1;
+		}
+		cout << "here" << endl;
+		normalized_pictures.push_back ( pic_temp );
+	}
+	cerr<<"C1_Function : end of normalizing pictures\n";
+
+
+	// running gabor filters on pictures and + abs
+	cerr<<"C1_Function : running gabor filters pictures\n";
+	for ( iter_lpicture1 = gabor_filters.begin() ; iter_lpicture1 != gabor_filters.end() ; iter_lpicture1++ ){
+		
+		list<Picture> list_picture_temp;
+		for ( iter_picture1 = (*iter_lpicture1).begin() ; iter_picture1 != (*iter_lpicture1).end() ; iter_picture1++ ){
+
+			Picture pic_temp;
+			init_picture ( pic_temp , picture.width  , picture.height );
+			cerr<<"C1_Function : calling conv2_pictures_same\n";
+			//cout<<"stim\n";
+			//print_picture(picture);
+			//cout<<"gabor filter\n";
+			//print_picture(*iter_picture1);
+			imfilter_pictures_same( picture , *iter_picture1 , pic_temp );
+			cerr<<"C1_Function : end of calling conv2_pictures_same\n";
+			cerr<<"C1_Function : calling abs_matrix\n";
+			abs_matrix ( pic_temp.matrix , pic_temp.matrix , pic_temp.width * pic_temp.height );
+			cerr<<"C1_Function : end of calling abs_matrix\n";
+			list_picture_temp.push_back ( pic_temp );
+		}
+		if ( !equal_list_pictures ( list_picture_temp ) ){
+			cerr<<"error : C1_Function : list of gabored pictures are not the same size\n";
+		}
+		S1_Pictures.push_back ( list_picture_temp );
+		list_picture_temp.clear();
+	}
+	for(list<list<Picture> > ::iterator iter1 = S1_Pictures.begin();iter1 != S1_Pictures.end();iter1++){
+		for(list<Picture>::iterator iter2 = iter1->begin();iter2 != iter1->end();iter2++){
+			//cout<<"s1_pictures"<<endl;
+			//cout<<iter2->height<<"\t"<<iter2->width<<endl;
+			//print_picture(*iter2);
+		}
+	}
+	cerr<<"C1_Function : end of running gabor filters pictures\n";
+
+
+	// removing borders and divide by normalized picture
+	cerr<<"C1_Function : running removing borders\n";
+	for (  iter_lpicture1 = S1_Pictures.begin() , iter_picture1 = normalized_pictures.begin(), iter_lpicture2 = gabor_filters.begin() ; iter_lpicture1 != S1_Pictures.end() && iter_picture1 != normalized_pictures.end() && iter_lpicture2 != gabor_filters.end()  ; iter_lpicture1++ , iter_picture1++ , iter_lpicture2++){
+
+
+		if ( (*iter_lpicture2).begin() == (*iter_lpicture2).end() ){
+			cerr<<"error : C1 : gabor filters is empty in C1 function\n";
+			return -1;
+		}
+
+		/*if ( divide_by_s1Norm ( (*iter_lpicture1) , *iter_picture1 ) != 0 ){
+			cerr<<"error : C1 : while dividing to s1Norm\n";
+			return -1;
+		}*///TODO
+
+		int radius = (*((*iter_lpicture2).begin())).width ;
+		//cout<<"REMOVE BORDER RADIUS\t "<<radius<<endl;
+		for ( iter_picture2 = (*iter_lpicture1).begin() ; iter_picture2 != (*iter_lpicture1).end() ; iter_picture2++){
+
+			// remove borders
+			//remove_borders ( *iter_picture2 , (radius + 1)/2 , (radius -1)/2 );//TODO ATTENTION FOR +1 /2 AND -1 /2
+			remove_borders ( *iter_picture2 , (radius + 1)/2 , (radius +1)/2,(radius - 1)/2 , (radius - 1)/2 );//TODO ATTENTION FOR +1 /2 AND -1 /2
+			//cout<<"after remove border"<<endl;
+			//cout<<iter_picture2->height<<"\t"<<iter_picture2->width<<endl;
+			//print_picture(*iter_picture2);
+
+			divide_pictures ( *iter_picture2 , *iter_picture2 , *iter_picture1 );
+		}
+
+	}
+	for(list<list<Picture> > ::iterator iter1 = S1_Pictures.begin();iter1 != S1_Pictures.end();iter1++){
+		for(list<Picture>::iterator iter2 = iter1->begin();iter2 != iter1->end();iter2++){
+			//cout<<"after DDVIDE normalize"<<endl;
+			//cout<<iter2->height<<"\t"<<iter2->width<<endl;
+			//print_picture(*iter2);
+		}
+	}
+
+
+	//  doing max over scales
+	int num_of_scales_for_each_band = 2;//TODO it should be computed for each bank according to c1scaleSS but as in matlab code it is all time 2 I found it better to use it as a constant ; just change it in each iteration of loop using c1scaleSS
+	if ( S1_Pictures.size() < num_of_scales_for_each_band || S1_Pictures.size()%num_of_scales_for_each_band != 0 ){
+		cerr<<"error : C1 : while max over scales of one band, size of scales does not OK\n";
+		return -1;
+	}
+
+	//cerr<<"C1_Function : running local max over bands\n";
+
+	list<list<Picture> > list_list_picture_temp;
+	list_list_picture_temp.clear();
+
+	iter_lpicture1 = S1_Pictures.begin();
+	//cerr<<"size of S1_Pictures is "<<S1_Pictures.size()<<" and numof scales per band is "<<num_of_scales_for_each_band<<endl;
+	for ( int i=0 ; i<S1_Pictures.size()/num_of_scales_for_each_band ; i++){
+
+		iter_lpicture2 = iter_lpicture1;
+		iter_lpicture2++;
+		list<Picture> list_picture_temp;
+		list_picture_temp.clear();
+		init_list_picture (list_picture_temp , *iter_lpicture1);
+		for ( int j=1 ; j<num_of_scales_for_each_band ; j++){
+
+			if ( max_list_pictures ( list_picture_temp , *iter_lpicture2 ) != 0 ){
+				cerr<<"error : C1 : whiel doing max over scales for one band\n";
+				return -1;
+			}
+			iter_lpicture2++;
+			//free_list_picture ( *iter_lpicture2 );
+			// iter_lpicture2 = gabored_pictures.erase (iter_lpicture2);
+
+		}
+		iter_lpicture1 = iter_lpicture2;
+		if ( !equal_list_pictures ( list_picture_temp ) ){
+			cerr<<"error : C1_Function : list of C1 is not the same size\n";
+			return -1;
+		}
+		C1_Pictures.push_back ( list_picture_temp );
+	}
+
+	//cout<<"after max over scales\n";
+	//print_list_list_picture ( C1_Pictures );
+
+
+	// doing local max using c1SpaceSS(i)-1 for each picture for each band
+	//cerr<<"C1_Function : running local max over h and w\n";
+	int i=0;
+	for (  iter_lpicture1 = C1_Pictures.begin() ; iter_lpicture1 != C1_Pictures.end() ; iter_lpicture1++){
+
+		if ( max_filter ( *iter_lpicture1 , c1SpaceSS[i] , c1SpaceSS[i] ) != 0 ){
+			cerr<<"error : C1 : whiel doing local max\n";
+			return -1;
+		}
+		i++;
+		if ( !equal_list_pictures ( *iter_lpicture1 ) ){
+			cerr<<"error : C1_Function : list of C1 is not the same size\n";
+			return -1;
+		}
+
+	}
+
+	//cout<<"after localmax\n";
+	//print_list_list_picture ( C1_Pictures );
+
+
+	// doing local max using c1SpaceSS(i)-1 for each picture for each band
+	//cerr<<"C1_Function : running sub sampling\n";
+	i=0;
+	for (  iter_lpicture1 = C1_Pictures.begin() ; iter_lpicture1 != C1_Pictures.end() ; iter_lpicture1++){
+
+		Picture pic_temp;
+		for ( iter_picture1 = (*iter_lpicture1).begin() ; iter_picture1 != (*iter_lpicture1).end() ; iter_picture1++){
+
+		//	cerr<<"before subsample\n";
+			//cout<<"kianoosh test c1spacess["<<i<<"]"<<c1SpaceSS[i]<<"c10l ="<<c10L<<endl;
+			if ( sub_sample ( *iter_picture1 , pic_temp , ceil((float)(c1SpaceSS[i])/c10L) , ceil((float)(c1SpaceSS[i]/c10L))) != 0 ){
+				cerr<<"error : C1 : while sub sampling\n";
+				return -1;
+			}
+			//cout<<"ssssssssss"<<ceil((float)(c1SpaceSS[i])/c10L)+1<<endl;
+		//	cerr<<"after subsample\n";
+			free_picture (*iter_picture1);
+			*iter_picture1 = pic_temp;
+			//print_picture(pic_temp);
+		}
+		i++;
+		if ( !equal_list_pictures ( *iter_lpicture1 ) ){
+			cerr<<"error : C1_Function : list of C1 is not the same size\n";
+			return -1;
+		}
+	}
+
+	free_list_pictures ( normalized_pictures );
+/*	while(1){
+		if(getchar() == 'n')
+			break;
+	}*/
+	//cout << "press any key to continue" << endl;
+	//int abc;
+	//cin >> abc;
+	return 0;
+
+}
+
+int C1_Function_List ( list<Picture> &pictures, list<list<list<Picture> > > &S1_Results, list<list<list<Picture> > > &C1_Results , list<list<Picture> > &gabor_filters, const vector<int> &c1SpaceSS, const vector<int> &c1ScaleSS, int c10L ){
+
+
+	list<Picture>::iterator iter_picture1;
+
+	for ( iter_picture1 = pictures.begin() ; iter_picture1 != pictures.end() ;iter_picture1++){
+
+
+		list<list<Picture> > S1_temp;
+		list<list<Picture> > C1_temp;
+		S1_temp.clear();
+		C1_temp.clear();
+		C1_Function ( *iter_picture1 , S1_temp , C1_temp , gabor_filters , c1SpaceSS , c1SpaceSS , c10L );
+		S1_Results.push_back ( S1_temp );
+		C1_Results.push_back ( C1_temp );
+	}
+}
+
+int remove_borders ( const Picture &picture , int left, int up ,int right ,int bot ){
+
+	for ( int i=0 ; i<up ; i++ ){
+
+		for ( int j=0 ; j<picture.width ; j++ ){
+
+			picture.matrix[i*picture.width + j] = 0;
+		}
+	}
+	for ( int i=0 ; i<bot; i++ ){
+
+		for ( int j=0 ; j<picture.width ; j++ ){
+
+			picture.matrix[(i+picture.height-bot)*picture.width + j] = 0;
+		}
+	}
+	for ( int i=0 ; i<picture.height ; i++ ){
+
+		for ( int j=0 ; j<left ; j++ ){
+
+			picture.matrix[i*picture.width + j] = 0;
+		}
+	}
+	for ( int i=0 ; i<picture.height ; i++ ){
+
+		for ( int j=0 ; j<right ; j++ ){
+
+			picture.matrix[i*picture.width + j + picture.width - right] = 0;
+		}
+	}
+	return 0;
+}
+
+int local_max ( Picture &picture , int local_width , int local_height ){
+
+	for ( int i=0 ; i<picture.height ; i++){
+
+		for ( int j=0 ; j<picture.width-local_width ; j++ ){
+
+			for ( int k=1 ; k < local_width ; k++){
+
+				picture.matrix[i*picture.width + j] = max (picture.matrix[i*picture.width + j] , picture.matrix[i*picture.width + j + k] );
+			}
+		}
+
+		for ( int j = picture.width-local_width ; j<picture.width ; j++ ){
+
+			for ( int k=1 ; (j + k) < picture.width ; k++){
+
+				picture.matrix[i*picture.width + j] = max (picture.matrix[i*picture.width + j] , picture.matrix[i*picture.width + j + k] );
+			}
+		}
+	}
+	for ( int i=0 ; i<picture.width ; i++){
+
+		for ( int j=0 ; j<picture.height-local_height ; j++ ){
+
+			for ( int k=1 ; k < local_height ; k++){
+
+				picture.matrix[j*picture.width + i] = max (picture.matrix[j*picture.width + i] , picture.matrix[(j+k)*picture.width + i ] );
+			}
+		}
+
+		for ( int j = picture.height-local_height ; j<picture.height ; j++ ){
+
+			for ( int k=1 ; (j + k) < picture.height ; k++){
+
+				picture.matrix[j*picture.width + i] = max (picture.matrix[j*picture.width + i] , picture.matrix[j*picture.width + i + k] );
+			}
+		}
+	}
+	
+	//cout<<"maxfilter\n";
+	//print_picture(picture);
+
+	return 0;
+
+}
+
+int sub_sample ( const Picture &picture , Picture &sub_picture , int width_scale , int height_scale ){
+
+	sub_picture.width = ceil(picture.width / (float)width_scale);
+	sub_picture.height = ceil(picture.height / (float)height_scale);
+	//cerr<<"hi there : "<<width_scale<<" and height "<<height_scale<<endl;
+	//cerr<<" size of subsample is "<<sub_picture.height<<" and "<<sub_picture.width<<"\n";
+	init_picture_matrix ( sub_picture );
+
+	for ( int i=0 ; i<sub_picture.height ; i++){
+		
+		for ( int j=0 ; j<sub_picture.width ;j++){
+
+			sub_picture.matrix[i*sub_picture.width + j] = picture.matrix[i*picture.width*height_scale + j*width_scale];
+		}
+	}
+
+	return 0;
+
+}
+
+void SumFilter ( float *matrix , int width , int height , int radius){
+
+	int index = 0;
+	int sum = 0;
+	int pointer = 0;
+	int temporal = 0;
+
+	//cerr<<"SumFilter for width = "<<width<<" and height = "<<height<<" and radius = "<<radius<<endl;
+	//addede by mojtaba
+	float **temp;
+	temp = new float * [height];
+	for ( int i=0 ; i<height ; i++){
+		temp[i] = new float [width];
+	}
+	
+	//float temp[height][width];
+	//float temp2[height][width];
+	//cerr<<"SumFilter : starting first loop\n";
+	for(int i=0; i<height; i++ ){
+		int pointer=0;
+		sum=0;
+		index=0;
+
+		for(int t=0; t<radius &&  t<width; t++){
+			sum += matrix[t+i*width];
+		}
+		for(int t=radius; t<radius*2+1 && t<width; t++){
+			sum += matrix[i*width+t];
+			temp[i][index++] = sum;
+		}
+		pointer = 0;
+		for(int t=radius*2+1; t<width; t++ ){
+	
+			sum +=  matrix[i*width+t] - matrix[i*width+pointer];
+			pointer++;
+			temp[i][index++] = sum; 
+		}
+		for(int t=pointer; t<width-radius -1; t++ ){
+			sum -= matrix[i*width+t];
+			temp[i][index++] = sum;
+		}
+
+			
+	}
+	index=0;
+	//cerr<<"SumFilter : starting second loop\n";
+	//cerr<<"passing the first loop width is "<<width<<" and height is "<<height<<"\n";
+	for(int i=0; i<width; i++ ){
+		int pointer=0;
+		index=0;
+		sum=0;
+
+		//cerr<<"passing the zero part for  "<<i<<endl;
+		for(int t=0; t<radius &&  t<height;t++){
+			//cout<<"temp["<<t<<"]["<<i<<"]\n";
+			sum += temp[t][i];
+		}
+		//cerr<<"passing the first part for  "<<i<<endl;
+		for(int t=radius; t<radius*2+1 && t<height; t++){
+			sum += temp[t][i];
+			matrix[index*width+i]=sum;
+//			cout<<"i and index is "<<i<<"\t"<<index<<endl;
+			index++;
+		}
+		pointer = 0;
+		//cerr<<"passing the second part for  "<<i<<endl;
+		for(int k=radius*2+1; k<height; k++ ){
+	
+			sum += temp[k][i] - temp[pointer][i];
+			pointer++;
+			matrix[index*width+i]=sum;
+//			cout<<"i and index is "<<i<<"\t"<<index<<endl;
+			index++;
+		}
+		//cerr<<"passing the third part for  "<<i<<endl;
+		for(int t=pointer; t<height-radius-1; t++ ){
+			//cout<<"temp["<<t<<"]["<<i<<"] and matrix["<<index*width+i<<"]\n";
+			sum -= temp[t][i];
+			matrix[index*width+i]=sum;
+			//cout<<"i and index is "<<i<<"\t"<<index<<endl;
+			index++;
+		}
+		//if ( i==width-1){
+		//	cerr<<"pointer now is "<<pointer<<endl;
+		//}
+		//cerr<<"passing the final part for  "<<i<<endl;
+		continue;
+			
+	}
+	for ( int i=0 ; i<height ; i++){
+		delete [] temp[i];
+	}
+	delete [] temp;
+	//cerr<<"passing second loop\n";
+	//cerr<<"SumFilter end\n";
+		
+}
+
+int SumFilter ( Picture pic , int radius[] , int size ){
+
+	if ( size == 4 ){
+		Picture ones;
+		init_picture ( ones , radius[0]+radius[2] + 1 , radius[1]+radius[3]+1 , 1 );
+		conv2_pictures_same ( pic , ones , pic );
+		free_picture(ones);
+		return 0;
+	}
+	else if ( size == 1 ){
+		Picture ones;
+		init_picture ( ones , 2*radius[0]+1, 2*radius[0]+1, 1 );
+		conv2_pictures_same ( pic , ones , pic );
+		free_picture(ones);
+		return 0;
+	}
+	else
+		return -1;
+}
+
+void Radical2(float* a, int size){
+	float* result=a;
+	for(int i=0; i<size; i++){
+		result[i] = pow(a[i],0.5);	
+
+	}
+}
+
+void Plus_Not ( float *matrix , int size ){
+
+	for ( int i=0 ; i<size ; i++ ){
+		if ( matrix[i] == 0 )
+			matrix[i] = 1;
+	}
+}
+
+void Power2(float* a, float* result, int size){
+
+	for(int i=0; i<size; i++){
+		result[i] = pow(a[i],2);	
+	}
+}
+

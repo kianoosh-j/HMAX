@@ -1,0 +1,17 @@
+-I cleaned and improved the function in file_processing.cpp : read_picture_from_file which was named Pixel before
+
+-I defined a class named Patch
+
+-I started customizing the code to match the new implemented class, Patch
+	-In C1.cpp & C1.h
+		- extract_random_patches
+		- extract_arandom_patch 
+	-In file_processing.cpp & file_processing.h
+		-write_patches_information_to_file
+	-In file myC2.cpp
+		-run_c2_for_all_pictures
+		-C2_function
+		-struct input_dat
+
+- I wrote a function in Picture.cpp that extracts a random from itself
+	-extract_random_patch

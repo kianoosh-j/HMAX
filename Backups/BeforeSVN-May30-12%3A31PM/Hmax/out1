@@ -1,0 +1,759 @@
+ before reading directories in make_face :  
+argv[base_index]+input_name[i] /home/cognitive/project/pictures/faces/train_pos
+out of getdir()
+argv[base_index]+input_name[i] /home/cognitive/project/pictures/faces/train_neg
+out of getdir()
+argv[base_index]+input_name[i] /home/cognitive/project/pictures/faces/test_pos
+out of getdir()
+argv[base_index]+input_name[i] /home/cognitive/project/pictures/faces/test_neg
+out of getdir()
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	212
+here
+here
+C1_Function	140	211
+here
+here
